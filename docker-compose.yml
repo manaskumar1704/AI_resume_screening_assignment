@@ -52,7 +52,7 @@ services:
       retries: 3
     restart: unless-stopped
     command: >
-      sh -c "alembic upgrade head && uv run fastapi run app/main.py --port 8000"
+      sh -c "uv run alembic upgrade head && uv run fastapi run app/main.py --port 8000"
 
   worker:
     build:
