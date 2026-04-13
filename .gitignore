@@ -1,0 +1,9 @@
+# OpenCode
+.opencode/
+
+# Planning artifacts
+.planning/
+
+# OpenCode configuration (source of truth)
+AGENTS.md
+DESIGN.md
