@@ -83,11 +83,10 @@ An async backend service that screens PDF resumes against Job Descriptions using
 - Write error_message on terminal failure
 
 ### Status
-- [x] Task specs created: 04-TASK-SPECS.md
-- [x] Plan created: 04-01-PLAN.md
+- [x] Complete
 
 ### Plans
-- [x] 04-01-PLAN.md — ARQ Worker Implementation (4 tasks)
+- [x] 04-01-PLAN.md — ARQ Worker Implementation (4 tasks) - **COMPLETE**
 
 ### Success Criteria
 - Worker picks up pending jobs

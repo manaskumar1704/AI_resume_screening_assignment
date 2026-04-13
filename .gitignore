@@ -4,6 +4,23 @@
 # Planning artifacts
 .planning/*
 .planning/phases
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyi
+.venv/
+venv/
+
+# Environment
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
 # OpenCode configuration (source of truth)
 AGENTS.md
 DESIGN.md
