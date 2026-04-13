@@ -73,7 +73,7 @@ async def evaluate_resume(
             await pool.enqueue_job(
                 "screen_resume",
                 evaluation_id=str(evaluation.id),
-                resume_bytes=resume_b64,
+                resume_bytes_b64=resume_b64,
                 jd_text=jd,
             )
             await pool.close()
