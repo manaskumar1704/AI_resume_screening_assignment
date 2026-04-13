@@ -59,6 +59,10 @@ An async backend service that screens PDF resumes against Job Descriptions using
 
 ### Status
 - [x] Task specs created: 03-TASK-SPECS.md
+- [x] Plan created: 03-01-PLAN.md
+
+### Plans
+- [ ] 03-01-PLAN.md — LLM Service Implementation (4 tasks)
 
 ### Success Criteria
 - LLM returns structured JSON matching schema
