@@ -1,13 +1,11 @@
 import base64
 import logging
 import traceback
-from arq import BaseWorker
 from tenacity import (
     retry,
     stop_after_attempt,
     wait_exponential,
     retry_if_exception_type,
-    retry_if_exception_value,
 )
 
 from app.database import async_session_maker
