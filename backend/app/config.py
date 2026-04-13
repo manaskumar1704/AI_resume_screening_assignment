@@ -1,5 +1,9 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
 from typing import Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
@@ -20,6 +24,56 @@ class Settings(BaseSettings):
 
     DEBUG: bool = False
     MAX_FILE_SIZE_MB: int = 10
+
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def validate_database_url(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("DATABASE_URL is required")
+        return v
+
+    @field_validator("REDIS_URL")
+    @classmethod
+    def validate_redis_url(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("REDIS_URL is required")
+        return v
+
+    @field_validator("LLM_PROVIDER")
+    @classmethod
+    def validate_llm_provider(cls, v: str) -> str:
+        valid_providers = ["openai", "anthropic", "groq"]
+        if v not in valid_providers:
+            raise ValueError(
+                f"LLM_PROVIDER must be one of: {', '.join(valid_providers)}"
+            )
+        return v
+
+    def validate_api_keys(self) -> None:
+        """Validate that required API keys are set based on provider."""
+        if self.LLM_PROVIDER == "groq" and not self.GROQ_API_KEY:
+            raise ValueError(
+                "GROQ_API_KEY is required when LLM_PROVIDER=groq. "
+                "Please set GROQ_API_KEY in your .env file."
+            )
+        elif self.LLM_PROVIDER == "openai" and not self.OPENAI_API_KEY:
+            raise ValueError(
+                "OPENAI_API_KEY is required when LLM_PROVIDER=openai. "
+                "Please set OPENAI_API_KEY in your .env file."
+            )
+        elif self.LLM_PROVIDER == "anthropic" and not self.ANTHROPIC_API_KEY:
+            raise ValueError(
+                "ANTHROPIC_API_KEY is required when LLM_PROVIDER=anthropic. "
+                "Please set ANTHROPIC_API_KEY in your .env file."
+            )
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        try:
+            self.validate_api_keys()
+        except ValueError as e:
+            logger.error(f"Configuration validation failed: {e}")
+            raise
 
 
 settings = Settings()

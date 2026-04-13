@@ -1,5 +1,6 @@
 import base64
 import logging
+import time
 import traceback
 from tenacity import (
     retry,
@@ -19,6 +20,12 @@ class RateLimitError(Exception):
     pass
 
 
+class InvalidLLMOutputError(Exception):
+    """Raised when LLM output fails schema validation."""
+
+    pass
+
+
 class APIConnectionError(Exception):
     pass
 
@@ -33,18 +40,36 @@ def is_rate_limit_error(exception: BaseException) -> bool:
     )
 
 
+def is_retryable_error(exception: BaseException) -> bool:
+    """Check if error is retryable (rate limits, connection issues, invalid output)."""
+    return is_rate_limit_error(exception) or isinstance(
+        exception, InvalidLLMOutputError
+    )
+
+
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=1, max=30),
-    retry=retry_if_exception_type((RateLimitError, APIConnectionError)),
+    retry=retry_if_exception_type(
+        (RateLimitError, APIConnectionError, InvalidLLMOutputError)
+    ),
     reraise=True,
 )
 async def call_llm_with_retry(resume_text: str, jd_text: str):
+    start_time = time.time()
     try:
-        return await llm_service.screen(resume_text, jd_text)
+        scorecard = await llm_service.screen(resume_text, jd_text)
+
+        if not scorecard or not scorecard.score:
+            raise InvalidLLMOutputError("LLM returned empty or invalid scorecard")
+
+        duration = time.time() - start_time
+        logger.info(f"LLM call completed in {duration:.2f}s")
+        return scorecard
     except Exception as e:
-        if is_rate_limit_error(e):
-            logger.warning(f"Rate limit error, retrying: {e}")
+        duration = time.time() - start_time
+        logger.warning(f"LLM call failed after {duration:.2f}s: {e}")
+        if is_retryable_error(e):
             raise
         raise
 
@@ -55,7 +80,7 @@ async def screen_resume(
     resume_bytes_b64: str,
     jd_text: str,
 ):
-    logger.debug(f"Starting evaluation {evaluation_id}")
+    logger.info(f"Job started for evaluation {evaluation_id}")
 
     resume_bytes = base64.b64decode(resume_bytes_b64)
 
@@ -77,7 +102,12 @@ async def screen_resume(
         logger.info(f"Evaluation {evaluation_id} set to processing")
 
         try:
+            pdf_start = time.time()
             resume_text = await pdf_parser.extract(resume_bytes)
+            pdf_duration = time.time() - pdf_start
+            logger.info(
+                f"PDF parsing completed in {pdf_duration:.2f}s for evaluation {evaluation_id}"
+            )
 
             scorecard = await call_llm_with_retry(resume_text, jd_text)
 
@@ -92,7 +122,7 @@ async def screen_resume(
 
             await session.commit()
             logger.info(
-                f"Evaluation {evaluation_id} completed with score {scorecard.score}"
+                f"Evaluation {evaluation_id} completed successfully with score {scorecard.score}"
             )
             return {"status": "completed", "evaluation_id": evaluation_id}
 

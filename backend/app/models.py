@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Text, Integer, Float, DateTime, func
+from sqlalchemy import Column, String, Text, Integer, Float, DateTime, func, Index
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from app.database import Base
 
@@ -11,6 +11,7 @@ class Evaluation(Base):
     status = Column(String(20), nullable=False, default="pending")
     resume_filename = Column(Text, nullable=False)
     jd_text = Column(Text, nullable=False)
+    request_hash = Column(String(64), nullable=True, index=True)
     score = Column(Integer, nullable=True)
     verdict = Column(String(50), nullable=True)
     missing_requirements = Column(JSONB, nullable=True)
@@ -28,3 +29,5 @@ class Evaluation(Base):
         onupdate=func.now(),
         nullable=False,
     )
+
+    __table_args__ = (Index("ix_evaluations_hash_status", "request_hash", "status"),)
