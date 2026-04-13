@@ -27,7 +27,7 @@ progress:
 | 2: Evaluate Endpoints | Complete |
 | 3: LLM Service | Complete |
 | 4: ARQ Worker | Complete (Plan 1) |
-| 5: Integration Tests | Not started |
+| 5: Integration Tests | Planned (Plan 1) |
 
 ---
 

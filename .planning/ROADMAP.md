@@ -98,15 +98,11 @@ An async backend service that screens PDF resumes against Job Descriptions using
 ## Phase 5: Integration Tests
 **Goal:** Create pytest integration tests with mocked LLM covering full lifecycle.
 
-### Tasks
-- Create tests/conftest.py with test DB, test Redis, async client fixtures
-- Create tests/fixtures/sample_resume.pdf
-- Test: Upload valid PDF + JD → assert 202 + evaluation_id
-- Test: Poll GET until completed → assert valid scorecard shape
-- Test: Upload non-PDF → assert 422
-- Test: LLM raises RateLimitError → assert retries → assert failed status
-- Test: GET unknown ID → assert 404
-- Clean up after each test (transactions or truncation)
+### Status
+- [x] Plan created: 05-01-PLAN.md
+
+### Plans
+- [x] 05-01-PLAN.md — Integration Tests Implementation (3 tasks)
 
 ### Success Criteria
 - All 5 test cases pass
