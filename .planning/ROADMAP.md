@@ -36,7 +36,7 @@ An async backend service that screens PDF resumes against Job Descriptions using
 4. GET /health/ready returns 200 when both DB and Redis are reachable (observable: curl localhost:8000/health/ready returns 200)
 5. GET /metrics returns Prometheus-formatted metrics (observable: curl localhost:8000/metrics returns text/plain with evaluation counts)
 
-**Plans**: TBD
+**Plans**: 2 plans (06-01-PLAN.md, 06-02-PLAN.md)
 
 ### Phase 7: Data Layer
 **Goal**: Database schema migration enabling deduplication of evaluation requests
