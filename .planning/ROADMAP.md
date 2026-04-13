@@ -15,7 +15,7 @@ An async backend service that screens PDF resumes against Job Descriptions using
 
 ## Phases
 
-- [ ] **Phase 6: Infrastructure** — Config validation, structured logging, health checks, metrics
+- [x] **Phase 6: Infrastructure** — Config validation, structured logging, health checks, metrics (completed 2026-04-13)
 - [ ] **Phase 7: Data Layer** — Alembic migration for request_hash, indexes
 
 ---
@@ -59,7 +59,7 @@ An async backend service that screens PDF resumes against Job Descriptions using
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 6. Infrastructure | 0/1 | Not started | - |
+| 6. Infrastructure | 2/2 | Complete    | 2026-04-13 |
 | 7. Data Layer | 0/1 | Not started | - |
 
 ---
