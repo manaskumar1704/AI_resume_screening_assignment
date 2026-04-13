@@ -62,7 +62,6 @@ def parse_json_fallback(response_text: str) -> ScorecardSchema:
 
 async def screen(resume_text: str, jd_text: str) -> ScorecardSchema:
     system_prompt = load_prompt()
-    formatted_prompt = system_prompt.format(resume_text=resume_text, jd_text=jd_text)
 
     llm = get_llm()
 
@@ -71,36 +70,23 @@ async def screen(resume_text: str, jd_text: str) -> ScorecardSchema:
     )
 
     try:
-        structured_llm = llm.with_structured_output(ScorecardSchema)
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", system_prompt),
+                ("human", "Resume:\n{resume}\n\nJob Description:\n{jd}"),
+            ]
+        )
 
-        response = await structured_llm.ainvoke(formatted_prompt)
+        chain = prompt | llm.with_structured_output(ScorecardSchema)
+
+        response = await chain.ainvoke({"resume": resume_text, "jd": jd_text})
 
         logger.info(
             f"LLM response (structured): score={response.score}, verdict={response.verdict}"
         )
+
         return response
 
     except Exception as e:
-        logger.warning(f"Structured output failed: {e}, attempting fallback")
-
-        try:
-            response_text = await llm.ainvoke(formatted_prompt)
-            response_str = (
-                response_text.content
-                if hasattr(response_text, "content")
-                else str(response_text)
-            )
-
-            logger.info(f"Fallback response text: {response_str[:200]}...")
-
-            result = parse_json_fallback(response_str)
-            logger.info(
-                f"Fallback succeeded: score={result.score}, verdict={result.verdict}"
-            )
-            return result
-
-        except Exception as fallback_error:
-            logger.error(f"Fallback also failed: {fallback_error}")
-            raise ValueError(
-                f"Both structured and fallback parsing failed: {fallback_error}"
-            ) from fallback_error
+        logger.error(f"Structured output failed: {e}")
+        raise

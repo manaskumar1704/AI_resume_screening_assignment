@@ -12,6 +12,7 @@ class WorkerSettings:
 
     redis_settings = RedisSettings.from_dsn(settings.REDIS_URL)
     functions = ["app.worker.tasks.screen_resume"]
+    queue_name = "arq:queue"
     max_jobs = 10
     job_timeout = 300
     keep_result = 3600

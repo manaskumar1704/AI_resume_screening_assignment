@@ -80,7 +80,9 @@ async def screen_resume(
     resume_bytes_b64: str,
     jd_text: str,
 ):
-    logger.info(f"Job started for evaluation {evaluation_id}")
+    logger.info(f"Processing evaluation {evaluation_id}")
+
+    resume_bytes = base64.b64decode(resume_bytes_b64)
 
     resume_bytes = base64.b64decode(resume_bytes_b64)
 

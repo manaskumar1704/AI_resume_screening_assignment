@@ -109,10 +109,11 @@ async def evaluate_resume(
             redis_settings = RedisSettings.from_dsn(settings.REDIS_URL)
             pool = await create_pool(redis_settings)
             await pool.enqueue_job(
-                "screen_resume",
+                "app.worker.tasks.screen_resume",
                 evaluation_id=str(evaluation.id),
                 resume_bytes_b64=resume_b64,
                 jd_text=jd,
+                _queue_name="arq:queue",
             )
             await pool.close()
             logger.info(f"Job enqueued for evaluation {evaluation.id}")
@@ -188,10 +189,11 @@ async def evaluate_resume(
             redis_settings = RedisSettings.from_dsn(settings.REDIS_URL)
             pool = await create_pool(redis_settings)
             await pool.enqueue_job(
-                "screen_resume",
+                "app.worker.tasks.screen_resume",
                 evaluation_id=str(evaluation.id),
                 resume_bytes_b64=resume_b64,
                 jd_text=jd,
+                _queue_name="arq:queue",
             )
             await pool.close()
             logger.info(f"Job enqueued for evaluation {evaluation.id}")
