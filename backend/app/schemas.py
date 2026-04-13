@@ -16,6 +16,9 @@ class EvalResponse(BaseModel):
     verdict: Optional[Literal["strong_match", "moderate_match", "weak_match"]] = None
     missing_requirements: Optional[List[str]] = None
     justification: Optional[str] = None
+    confidence: Optional[float] = None
+    match_percentages: Optional[Dict[str, float]] = None
+    extracted_skills: Optional[List[str]] = None
 
     error_message: Optional[str] = None
 

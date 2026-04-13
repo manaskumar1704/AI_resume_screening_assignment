@@ -84,8 +84,6 @@ async def screen_resume(
 
     resume_bytes = base64.b64decode(resume_bytes_b64)
 
-    resume_bytes = base64.b64decode(resume_bytes_b64)
-
     async with async_session_maker() as session:
         from sqlalchemy import select
         from sqlalchemy.dialects.postgresql import UUID
