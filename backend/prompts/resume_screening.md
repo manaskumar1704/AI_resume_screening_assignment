@@ -25,7 +25,10 @@ If you include anything other than JSON, the system will fail.
   "score": integer (0-100),
   "verdict": "strong_match" | "moderate_match" | "weak_match",
   "missing_requirements": string[],
-  "justification": string
+  "justification": string,
+  "confidence": float (0.0-1.0),
+  "match_percentages": object (key: skill name, value: percentage 0-100),
+  "extracted_skills": string[]
 }
 ```
 
@@ -69,6 +72,9 @@ The verdict MUST match the score range.
   - strengths
   - gaps
   - reasoning behind score
+- confidence: how confident you are in this assessment (0.0-1.0)
+- match_percentages: percentage match for each key skill from the JD
+- extracted_skills: list of skills you extracted from the resume
 
 ---
 
@@ -85,7 +91,10 @@ Output:
   "score": 72,
   "verdict": "moderate_match",
   "missing_requirements": ["Kubernetes", "AWS"],
-  "justification": "The candidate demonstrates strong backend skills with Python, FastAPI, and PostgreSQL. However, they lack experience in Kubernetes and AWS which are key requirements. Overall, the profile is a moderate match."
+  "justification": "The candidate demonstrates strong backend skills with Python, FastAPI, and PostgreSQL. However, they lack experience in Kubernetes and AWS which are key requirements. Overall, the profile is a moderate match.",
+  "confidence": 0.85,
+  "match_percentages": {"Python": 90, "FastAPI": 85, "PostgreSQL": 80, "Kubernetes": 20, "AWS": 15},
+  "extracted_skills": ["Python", "FastAPI", "PostgreSQL", "Docker"]
 }
 ```
 
@@ -104,7 +113,10 @@ Output:
   "score": 92,
   "verdict": "strong_match",
   "missing_requirements": [],
-  "justification": "The candidate exceeds the required skill set with strong experience in Python, FastAPI, Docker, and AWS. Additional expertise in Kubernetes and CI/CD further strengthens the profile, making it a strong match."
+  "justification": "The candidate exceeds the required skill set with strong experience in Python, FastAPI, Docker, and AWS. Additional expertise in Kubernetes and CI/CD further strengthens the profile, making it a strong match.",
+  "confidence": 0.95,
+  "match_percentages": {"Python": 95, "FastAPI": 90, "Docker": 90, "AWS": 85, "Kubernetes": 70, "CI/CD": 60},
+  "extracted_skills": ["Python", "FastAPI", "Docker", "AWS", "Kubernetes", "CI/CD"]
 }
 ```
 
