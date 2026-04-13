@@ -9,7 +9,7 @@ The system accepts PDF resumes and job descriptions via HTTP API, queues them fo
 **Async evaluation flow:**
 
 1. Client uploads PDF resume + job description via `POST /api/v1/evaluate`
-2. API validates input, stores pending record in PostgreSQL, enqueues task to Redis
+2. API validates input, checks for duplicate requests, stores pending record in PostgreSQL, enqueues task to Redis
 3. ARQ worker picks up task, parses PDF with pdfplumber, calls LLM with LangChain
 4. LLM returns structured JSON scorecard (never raw text parsing)
 5. Worker updates database with results
@@ -25,7 +25,7 @@ Client → FastAPI API → PostgreSQL + Redis → ARQ Worker → LLM → DB upda
 
 **Client** submits resume via multipart/form-data POST. The API never calls the LLM directly.
 
-**FastAPI API** validates input (PDF only, non-empty JD), inserts a `pending` row into PostgreSQL, and enqueues an ARQ task to Redis. Returns `202 Accepted` immediately with evaluation UUID.
+**FastAPI API** validates input (PDF only, non-empty JD), checks for duplicate requests using request hash, inserts a `pending` row into PostgreSQL, and enqueues an ARQ task to Redis. Returns `202 Accepted` immediately with evaluation UUID.
 
 **PostgreSQL** stores all evaluation state and results. Uses async SQLAlchemy 2.0 with asyncpg driver.
 
@@ -46,11 +46,15 @@ Resume screening involves I/O-bound operations (PDF parsing, LLM API calls) that
 
 ### Separation of Concerns
 
-The API layer handles only HTTP validation, storage, and queueing. The worker handles all LLM interaction, PDF parsing, and database updates. This separation ensures:
+The API layer handles only HTTP validation, storage, deduplication, and queueing. The worker handles all LLM interaction, PDF parsing, and database updates. This separation ensures:
 
 - API stays responsive under load
 - LLM failures don't crash the API
 - Workers can be scaled horizontally
+
+### Deduplication
+
+The API computes a SHA-256 hash of the resume bytes + job description text. If a matching `request_hash` exists with status `completed`, the API returns the existing result instead of creating a duplicate evaluation.
 
 ## Tech Stack
 
@@ -69,6 +73,7 @@ The API layer handles only HTTP validation, storage, and queueing. The worker ha
 | Retry Logic | tenacity |
 | Queue/Cache | Redis 7-alpine |
 | Package Manager | uv 0.11.x |
+| Structured Logging | structlog |
 
 ### Infrastructure
 
@@ -118,6 +123,14 @@ The LLM system prompt lives in `backend/prompts/resume_screening.md`, loaded at 
 
 **Rule:** Never inline prompts in Python source. Always load with `open()` at runtime.
 
+### Why structlog?
+
+The project uses structlog for structured JSON logging in production, with console rendering in development. This enables:
+
+- Correlation IDs in logs for request tracing
+- Machine-parseable logs for production monitoring
+- Human-readable logs in development
+
 ## Evaluation Lifecycle
 
 1. **POST /api/v1/evaluate**
@@ -125,12 +138,15 @@ The LLM system prompt lives in `backend/prompts/resume_screening.md`, loaded at 
    - Fields: `resume` (PDF file), `jd` (string)
    - Response: `202 {"evaluation_id": "uuid", "status": "pending"}`
    - Validates PDF mime-type, rejects non-PDF with 422
+   - Checks for duplicate requests using request_hash
 
-2. **Pending** — Row inserted with `status='pending'`, task enqueued to Redis
+2. **Duplicate Check** — If existing completed evaluation with same hash, returns existing result with note
 
-3. **Worker pickup** — Sets `status='processing'`, parses PDF, calls LLM
+3. **Pending** — Row inserted with `status='pending'`, task enqueued to Redis
 
-4. **LLM processing** — Returns structured scorecard:
+4. **Worker pickup** — Sets `status='processing'`, parses PDF, calls LLM
+
+5. **LLM processing** — Returns structured scorecard:
    - `score` (0-100)
    - `verdict` (strong_match | moderate_match | weak_match)
    - `missing_requirements` (list)
@@ -139,14 +155,22 @@ The LLM system prompt lives in `backend/prompts/resume_screening.md`, loaded at 
    - `match_percentages` (dict)
    - `extracted_skills` (list)
 
-5. **Success** — Worker updates row with scorecard, sets `status='completed'`
+6. **Success** — Worker updates row with scorecard, sets `status='completed'`
 
-6. **Failure** — Worker sets `status='failed'`, writes `error_message`
+7. **Failure** — Worker sets `status='failed'`, writes `error_message`
 
-7. **GET /api/v1/evaluate/{id}**
+8. **GET /api/v1/evaluate/{id}**
    - Pending: `{"id": "uuid", "status": "pending", "created_at": "..."}`
    - Completed: Full scorecard response
    - 404: Unknown ID
+
+## Health & Monitoring
+
+The API provides health check and metrics endpoints:
+
+- **GET /health/live** — Liveness probe (returns 200 when process is running)
+- **GET /health/ready** — Readiness probe (returns 200 when DB and Redis are reachable)
+- **GET /metrics** — Prometheus-formatted metrics
 
 ## Setup Instructions (Docker)
 
@@ -244,21 +268,27 @@ resume-screener/
 ├── .env.example                # Environment template
 ├── README.md                   # This file
 ├── AGENTS.md                   # Project source of truth
+├── DESIGN.md                   # Frontend design system ("Dossier Framework")
 │
 ├── backend/
 │   ├── Dockerfile
 │   ├── pyproject.toml          # Python dependencies
 │   ├── alembic.ini
 │   ├── alembic/versions/       # Database migrations
+│   │   ├── 001_initial.py
+│   │   └── 002_add_request_hash.py
 │   ├── prompts/               # External LLM prompts
 │   │   └── resume_screening.md
 │   └── app/
 │       ├── main.py             # FastAPI app factory
-│       ├── config.py           # Pydantic settings
+│       ├── config.py           # Pydantic settings with validation
 │       ├── database.py        # Async SQLAlchemy engine
 │       ├── models.py          # SQLAlchemy ORM models
 │       ├── schemas.py         # Pydantic request/response
 │       ├── api/routes/         # API endpoints
+│       │   ├── evaluations.py # POST/GET evaluation endpoints
+│       │   ├── health.py      # Health check endpoints
+│       │   └── metrics.py     # Prometheus metrics
 │       ├── services/          # PDF parser, LLM service
 │       └── worker/             # ARQ tasks and settings
 │
@@ -295,6 +325,16 @@ DEBUG=false
 
 **No API keys are committed.** Always use `.env` for secrets.
 
+## Configuration Validation
+
+The application validates configuration at startup:
+
+- DATABASE_URL and REDIS_URL must be non-empty
+- LLM_PROVIDER must be one of: openai, anthropic, groq
+- Provider-specific API key must be set (GROQ_API_KEY, OPENAI_API_KEY, or ANTHROPIC_API_KEY)
+
+If any required configuration is missing, the application fails fast with a clear error message.
+
 ## Notes for Evaluators
 
 - **No API keys committed** — All keys go in `.env`, which is gitignored
@@ -302,3 +342,6 @@ DEBUG=false
 - **Full stack runs in Docker** — `docker-compose up --build` starts everything
 - **Tests don't require real LLM** — The LLM is mocked in all tests
 - **Async architecture** — API never calls LLM directly; ARQ worker handles all LLM interaction
+- **Deduplication** — Duplicate requests (same resume + JD) return existing results
+- **Health checks** — Use `/health/live` and `/health/ready` for container orchestration
+- **Metrics** — Prometheus metrics available at `/metrics`
