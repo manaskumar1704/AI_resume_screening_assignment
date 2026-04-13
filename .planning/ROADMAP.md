@@ -16,7 +16,7 @@ An async backend service that screens PDF resumes against Job Descriptions using
 ## Phases
 
 - [x] **Phase 6: Infrastructure** — Config validation, structured logging, health checks, metrics (completed 2026-04-13)
-- [ ] **Phase 7: Data Layer** — Alembic migration for request_hash, indexes
+- [ ] **Phase 7: Data Layer** — Alembic migration for request_hash, indexes (ready to execute)
 
 ---
 
@@ -50,7 +50,7 @@ An async backend service that screens PDF resumes against Job Descriptions using
 2. Composite index exists on (request_hash, status) for deduplication queries (observable: EXPLAIN shows index usage)
 3. Migration can be reverted without data loss (observable: alembic downgrade executes successfully)
 
-**Plans**: TBD
+**Plans**: 1 plan (07-01-PLAN.md)
 **UI hint**: no
 
 ---
@@ -60,7 +60,7 @@ An async backend service that screens PDF resumes against Job Descriptions using
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 6. Infrastructure | 2/2 | Complete    | 2026-04-13 |
-| 7. Data Layer | 0/1 | Not started | - |
+| 7. Data Layer | 1/1 | Ready to execute | - |
 
 ---
 
