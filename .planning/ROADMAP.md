@@ -6,25 +6,32 @@ An async backend service that screens PDF resumes against Job Descriptions using
 
 ---
 
+## Milestones
+
+- ✅ **v1.0 Core Backend** — Phases 1-5 (shipped 2026-04-13)
+- 🚧 **v1.1 Production & Frontend** — Phases 6+ (in progress)
+
+---
+
 ## Current Milestone
 
 **v1.1** - (In Progress)
 
----
+<details>
+<summary>✅ v1.0 Core Backend (Phases 1-5) — SHIPPED 2026-04-13</summary>
 
-## Previous Milestone
+- [x] Phase 1: Project Scaffold & Database (3/3 plans) — completed 2026-04-13
+- [x] Phase 2: Evaluate Endpoints (1/1 plan) — completed 2026-04-13
+- [x] Phase 3: LLM Service (1/1 plan) — completed 2026-04-13
+- [x] Phase 4: ARQ Worker with Retry (1/1 plan) — completed 2026-04-13
+- [x] Phase 5: Integration Tests (1/1 plan) — completed 2026-04-13
 
-### v1.0: Core Backend - COMPLETE ✅
+</details>
 
-| Phase | Status |
-|-------|--------|
-| 1: Project Scaffold & Database | Complete |
-| 2: Evaluate Endpoints | Complete |
-| 3: LLM Service | Complete |
-| 4: ARQ Worker with Retry | Complete |
-| 5: Integration Tests | Complete |
+### v1.1 Production & Frontend (In Progress / Planned)
 
-**v1.0 Summary:** Full backend implementation with FastAPI, ARQ worker, PostgreSQL, and LLM integration. All 5 integration tests pass.
+- [ ] Phase 6: Production Embellishments
+- [ ] Phase 7: Frontend Development
 
 ---
 
