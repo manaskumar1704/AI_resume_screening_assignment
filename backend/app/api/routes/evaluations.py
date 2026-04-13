@@ -2,23 +2,16 @@ import base64
 import uuid
 import logging
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, status
-from fastapi.responses import JSONResponse
 
 from app.config import settings
-from app.schemas import EvalResponse, EvaluationStatus
-from app.database import async_session_maker, get_db
+from app.schemas import EvalResponse
+from app.database import get_db
 from app.models import Evaluation
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-
-arq_pool: "ARQPool" = None
-
-
-async def get_arq_pool():
-    return arq_pool
 
 
 async def create_evaluation(
