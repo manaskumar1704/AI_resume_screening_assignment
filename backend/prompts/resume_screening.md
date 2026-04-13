@@ -20,12 +20,14 @@ If you include anything other than JSON, the system will fail.
 
 ## REQUIRED JSON SCHEMA
 
+```json
 {
   "score": integer (0-100),
   "verdict": "strong_match" | "moderate_match" | "weak_match",
   "missing_requirements": string[],
   "justification": string
 }
+```
 
 ---
 
@@ -78,12 +80,14 @@ JD: Python, FastAPI, Kubernetes, AWS
 
 Output:
 
+```json
 {
   "score": 72,
   "verdict": "moderate_match",
   "missing_requirements": ["Kubernetes", "AWS"],
   "justification": "The candidate demonstrates strong backend skills with Python, FastAPI, and PostgreSQL. However, they lack experience in Kubernetes and AWS which are key requirements. Overall, the profile is a moderate match."
 }
+```
 
 ---
 
@@ -95,12 +99,14 @@ JD: Python, FastAPI, Docker, AWS
 
 Output:
 
+```json
 {
   "score": 92,
   "verdict": "strong_match",
   "missing_requirements": [],
   "justification": "The candidate exceeds the required skill set with strong experience in Python, FastAPI, Docker, and AWS. Additional expertise in Kubernetes and CI/CD further strengthens the profile, making it a strong match."
 }
+```
 
 ---
 

@@ -62,6 +62,7 @@ def parse_json_fallback(response_text: str) -> ScorecardSchema:
 
 async def screen(resume_text: str, jd_text: str) -> ScorecardSchema:
     system_prompt = load_prompt()
+    system_prompt_escaped = system_prompt.replace("{", "{{").replace("}", "}}")
 
     llm = get_llm()
 
@@ -70,16 +71,14 @@ async def screen(resume_text: str, jd_text: str) -> ScorecardSchema:
     )
 
     try:
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", system_prompt),
-                ("human", "Resume:\n{resume}\n\nJob Description:\n{jd}"),
-            ]
+        prompt = ChatPromptTemplate.from_template(
+            f"{system_prompt_escaped}\n\nResume:\n{{resume}}\n\nJob Description:\n{{jd}}"
         )
 
-        chain = prompt | llm.with_structured_output(ScorecardSchema)
+        formatted_prompt = await prompt.ainvoke({"resume": resume_text, "jd": jd_text})
 
-        response = await chain.ainvoke({"resume": resume_text, "jd": jd_text})
+        structured_llm = llm.with_structured_output(ScorecardSchema)
+        response = await structured_llm.ainvoke(formatted_prompt)
 
         logger.info(
             f"LLM response (structured): score={response.score}, verdict={response.verdict}"
@@ -88,5 +87,34 @@ async def screen(resume_text: str, jd_text: str) -> ScorecardSchema:
         return response
 
     except Exception as e:
-        logger.error(f"Structured output failed: {e}")
-        raise
+        logger.warning(f"Structured output failed: {e}, attempting fallback")
+
+        try:
+            prompt = ChatPromptTemplate.from_template(
+                f"{system_prompt_escaped}\n\nResume:\n{{resume}}\n\nJob Description:\n{{jd}}"
+            )
+
+            formatted_prompt = await prompt.ainvoke(
+                {"resume": resume_text, "jd": jd_text}
+            )
+
+            response_text = await llm.ainvoke(formatted_prompt)
+            response_str = (
+                response_text.content
+                if hasattr(response_text, "content")
+                else str(response_text)
+            )
+
+            logger.info(f"Fallback response text: {response_str[:200]}...")
+
+            result = parse_json_fallback(response_str)
+            logger.info(
+                f"Fallback succeeded: score={result.score}, verdict={result.verdict}"
+            )
+            return result
+
+        except Exception as fallback_error:
+            logger.error(f"Fallback also failed: {fallback_error}")
+            raise ValueError(
+                f"Both structured and fallback parsing failed: {fallback_error}"
+            ) from fallback_error
