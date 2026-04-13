@@ -338,6 +338,7 @@ If any required configuration is missing, the application fails fast with a clea
 ## Notes for Evaluators
 
 - **No API keys committed** — All keys go in `.env`, which is gitignored
+- **Recent fixes** — Production audit addressed: duplicate endpoint handlers removed, API response schema fields completed
 - **System requires an API key** — Set `GROQ_API_KEY` (or `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) in `.env`
 - **Full stack runs in Docker** — `docker-compose up --build` starts everything
 - **Tests don't require real LLM** — The LLM is mocked in all tests
