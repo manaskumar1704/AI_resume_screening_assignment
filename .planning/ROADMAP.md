@@ -9,49 +9,73 @@ An async backend service that screens PDF resumes against Job Descriptions using
 ## Milestones
 
 - ✅ **v1.0 Core Backend** — Phases 1-5 (shipped 2026-04-13)
-- 🚧 **v1.1 Production & Frontend** — Phases 6+ (in progress)
+- 🚧 **v1.1 Production & Frontend** — Phases 6-7 (in progress)
 
 ---
 
-## Current Milestone
+## Phases
 
-**v1.1** - (In Progress)
+- [ ] **Phase 6: Infrastructure** — Config validation, structured logging, health checks, metrics
+- [ ] **Phase 7: Data Layer** — Alembic migration for request_hash, indexes
 
-<details>
-<summary>✅ v1.0 Core Backend (Phases 1-5) — SHIPPED 2026-04-13</summary>
+---
 
-- [x] Phase 1: Project Scaffold & Database (3/3 plans) — completed 2026-04-13
-- [x] Phase 2: Evaluate Endpoints (1/1 plan) — completed 2026-04-13
-- [x] Phase 3: LLM Service (1/1 plan) — completed 2026-04-13
-- [x] Phase 4: ARQ Worker with Retry (1/1 plan) — completed 2026-04-13
-- [x] Phase 5: Integration Tests (1/1 plan) — completed 2026-04-13
+## Phase Details
 
-</details>
+### Phase 6: Infrastructure
+**Goal**: Production-ready backend with config validation, structured logging, health checks, and metrics
 
-### v1.1 Production & Frontend (In Progress / Planned)
+**Depends on**: Phase 5 (v1.0 completion)
 
-- [ ] Phase 6: Production Embellishments
-- [ ] Phase 7: Frontend Development
+**Requirements**: INFR-01, INFR-02, INFR-03, INFR-04, INFR-05
+
+**Success Criteria** (what must be TRUE):
+1. API fails fast at startup if required config is missing (observable: app exits with clear error message)
+2. Every API request logs with correlation ID in structured JSON format (observable: logs contain request_id)
+3. GET /health/live returns 200 when process is running (observable: curl localhost:8000/health/live returns 200)
+4. GET /health/ready returns 200 when both DB and Redis are reachable (observable: curl localhost:8000/health/ready returns 200)
+5. GET /metrics returns Prometheus-formatted metrics (observable: curl localhost:8000/metrics returns text/plain with evaluation counts)
+
+**Plans**: TBD
+
+### Phase 7: Data Layer
+**Goal**: Database schema migration enabling deduplication of evaluation requests
+
+**Depends on**: Phase 6
+
+**Requirements**: DATA-01, DATA-02, DATA-03
+
+**Success Criteria** (what must be TRUE):
+1. Evaluations table has request_hash column (observable: SELECT request_hash FROM evaluations LIMIT 1 works)
+2. Composite index exists on (request_hash, status) for deduplication queries (observable: EXPLAIN shows index usage)
+3. Migration can be reverted without data loss (observable: alembic downgrade executes successfully)
+
+**Plans**: TBD
+**UI hint**: no
+
+---
+
+## Progress Table
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 6. Infrastructure | 0/1 | Not started | - |
+| 7. Data Layer | 0/1 | Not started | - |
 
 ---
 
 ## Future Work
 
+### Deferred to v2
+
 The following features are planned for future milestones:
 
-### Frontend Development
-- Next.js 15 application
+**Frontend Development**
+- Next.js 15 application with upload page and results dashboard
 - shadcn/ui components
-- Upload UI for PDF resumes
-- Results dashboard
+- Docker Compose integration
 
-### Infrastructure
-- Docker optimization
-- Health check endpoints
-- Metrics and monitoring
-
-### Enhancements
-- Authentication/Authorization
+**Enhancements**
 - Rate limiting at API level
 - Batch processing
 - Webhook notifications
@@ -63,4 +87,3 @@ The following features are planned for future milestones:
 - **AGENTS.md** — Source of truth for all implementation rules
 - **DESIGN.md** — Frontend design system ("Dossier Framework")
 - **backend/prompts/resume_screening.md** — LLM system prompt (must be external)
-- **.planning/milestones/v1.0/MILESTONE.md** — v1.0 complete summary

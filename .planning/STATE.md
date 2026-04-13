@@ -1,15 +1,15 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: Core Backend - COMPLETE ✅
-status: unknown
-last_updated: "2026-04-13T20:01:17.620Z"
+milestone: v1.1
+milestone_name: Production & Frontend
+status: planning
+last_updated: "2026-04-14T00:00:00.000Z"
 progress:
-  total_phases: 5
-  completed_phases: 4
-  total_plans: 6
-  completed_plans: 6
-  percent: 100
+  total_phases: 2
+  completed_phases: 0
+  total_plans: 2
+  completed_plans: 0
+  percent: 0
 ---
 
 # State: AI Resume Screening Service
@@ -30,58 +30,61 @@ All phases completed with 100% progress:
 | 4: ARQ Worker | Complete |
 | 5: Integration Tests | Complete |
 
-### v1.1 - Ready
+### v1.1 - In Progress
 
-Ready for next milestone development.
+**Current focus:** Planning phase structure
+
+| Phase | Status |
+|-------|--------|
+| 6: Infrastructure | Not started |
+| 7: Data Layer | Not started |
 
 ---
 
-## v1.0 Summary
+## v1.1 Context
 
-**Completed:** 2026-04-14
+**Goal:** Production-ready backend with config validation, structured logging, health checks, metrics, database migration for deduplication.
 
-- 6/6 plans executed
-- 5/5 integration tests passing
-- Full backend implementation complete
+**Key Dependencies:**
+- Phase 6 depends on Phase 5 (v1.0 completion)
+- Phase 7 depends on Phase 6
+
+**Requirements Coverage:**
+- INFR-01 through INFR-05 → Phase 6
+- DATA-01 through DATA-03 → Phase 7
 
 ---
 
 ## v1.0 Decisions (Preserved)
 
 **Phase 1: Project Scaffold & DB**
-
 - Separate Docker containers (postgres:17, redis:7-alpine, API)
 - Flattish Python structure (backend/app/)
 - Standard DB pool settings with modular code
 
 **Phase 2: Evaluate Endpoints**
-
 - /api/v1/ routes with clear versioning
 - Strict PDF-only validation at API layer
 - Full payload in ARQ job data
 - Standard response schemas
 
 **Phase 3: LLM Service**
-
 - Extended scorecard schema (confidence, match_percentages, extracted_skills)
 - Environment-driven LLM config
 - Prompt with examples (few-shot)
 - Structured output with fallback
 
 **Phase 4: ARQ Worker**
-
 - Standard retry (exponential backoff, 3 attempts)
 - pdfplumber for PDF parsing
 - Explicit status transitions (pending → processing → completed/failed)
 - Standard error handling with error_message in DB
 
 **Phase 5: Integration Tests**
-
 - Separate test DB with transaction rollback
 - Standard mocking (LLM, config, ARQ)
 - Single file test_evaluations.py with all 5 required test cases
-- Basic coverage approach
 
 ---
 
-*Milestone v1.0 archived to .planning/milestones/v1.0/MILESTONE.md*
+*Milestone v1.1 in progress*
