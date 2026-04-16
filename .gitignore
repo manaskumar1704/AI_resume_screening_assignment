@@ -24,3 +24,6 @@ venv/
 # OpenCode configuration (source of truth)
 AGENTS.md
 DESIGN.md
+
+# Skills
+.agents/*

@@ -303,6 +303,62 @@ resume-screener/
 
 ## Environment Variables
 
+Copy `.env.supabase.example` to `.env` and configure:
+
+```bash
+# Supabase (primary)
+cp .env.supabase.example .env
+# Replace [YOUR-PASSWORD] with your Supabase database password
+```
+
+Or for local development with Docker PostgreSQL:
+
+```bash
+# Local postgres (fallback)
+cp .env.example .env
+docker-compose --profile local up
+```
+
+---
+
+## Supabase Setup
+
+### Getting Started with Supabase
+
+1. Create a project at [supabase.com](https://supabase.com) if you don't have one
+
+2. Get your connection string:
+   - In Supabase dashboard: Settings → Database → Connection string
+   - Use the Session Pooler connection (not Transaction mode)
+
+3. Update `.env`:
+   ```
+   DATABASE_URL=postgresql+asyncpg://postgres:[YOUR-PASSWORD]@db.xx.supabase.co:5432/postgres
+   ```
+
+4. Run migrations:
+   ```bash
+   docker-compose up -d redis
+   cd backend && uv run alembic upgrade head
+   ```
+
+### Database Connection
+
+| Mode | DATABASE_URL | Run Command |
+|------|------------|------------|
+| Supabase (primary) | postgresql+asyncpg://...@db.xx.supabase.co:5432/postgres | `docker-compose up -d redis` |
+| Local PostgreSQL | postgresql+asyncpg://postgres:postgres@postgres:5432/resume_screener | `docker-compose --profile local up` |
+
+### Troubleshooting Supabase Connection
+
+- **Connection refused:** Check password is correct
+- **Authentication failed:** Verify credentials in Supabase dashboard
+- **Database not found:** Use `postgres` database (not your project name)
+
+---
+
+## Environment Variables
+
 Copy `.env.example` to `.env` and configure:
 
 ```bash

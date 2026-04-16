@@ -1,4 +1,5 @@
 services:
+  # Local PostgreSQL (fallback when not using Supabase) - run with: docker-compose --profile local up
   postgres:
     image: postgres:17
     container_name: resume-screener-postgres
@@ -16,6 +17,8 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    profiles:
+      - local
 
   redis:
     image: redis:7-alpine
@@ -41,8 +44,6 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
@@ -62,8 +63,6 @@ services:
     env_file:
       - .env
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
     restart: unless-stopped
