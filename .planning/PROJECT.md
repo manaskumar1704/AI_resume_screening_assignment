@@ -80,10 +80,10 @@ This document evolves at phase transitions and milestone boundaries.
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Supabase over local Docker | Production parity, no local DB dependency | ⚠️ IPv6 required |
-| Keep Docker postgres as fallback | Development flexibility, offline work | ✓ Works |
+| Supabase over local Docker | Production parity, no local DB dependency | ✓ Connected (IPv4) |
+| Keep Docker postgres as fallback | Development flexibility, offline work | ✓ Available |
 | Environment-based config | Easy switch between Supabase/local | ✓ Works |
-| Supabase free tier | Not IPv4 compatible | ⚠️ Needs IPv4 addon |
+| Supabase free tier | IPv4 now works via pooler | ✓ Works |
 
 ---
 
